@@ -1,13 +1,36 @@
 import re
 from typing import Dict, List, Union
-
+import dateparser
 from nlp_model import nlp
 
+
+def clean_text(text: str) -> str:
+    """
+    Nettoyage simple du texte OCR brut :
+    - suppression espaces/tabs multiples
+    - suppression caractères parasites
+    - remplacement ponctuations incohérentes
+    """
+    text = text.replace('\r', '\n')
+    text = re.sub(r'[ \t]+', ' ', text)
+    text = re.sub(r'[^\w\s@.+\-/]', '', text)  # conserve lettres, chiffres, @ . + - /
+    text = re.sub(r'\n+', '\n', text)
+    return text.strip()
+
+
+def parse_date(date_str: str) -> str:
+    """Parse une date française en format ISO, sinon 'Inconnu'"""
+    dt = dateparser.parse(date_str, languages=['fr'])
+    if dt:
+        return dt.strftime('%Y-%m-%d')
+    return "Inconnu"
+
+
 def extract_info_cv(text: str) -> Dict[str, Union[str, List[Union[str, Dict[str, str]]]]]:
-    # On conserve les retours à la ligne, mais on nettoie les espaces inutiles dans chaque ligne
-    raw_lines = [line.strip() for line in text.split('\n') if line.strip()]
-    clean_text = "\n".join(raw_lines)
-    lower_text = clean_text.lower()
+    # Nettoyage du texte brut OCR
+    cleaned_text = clean_text(text)
+    raw_lines = [line.strip() for line in cleaned_text.split('\n') if line.strip()]
+    lower_text = cleaned_text.lower()
 
     result = {
         "nom": "Inconnu",
@@ -22,57 +45,61 @@ def extract_info_cv(text: str) -> Dict[str, Union[str, List[Union[str, Dict[str,
         "formations": []
     }
 
-    # Email : regex classique, simple et efficace
-    email_match = re.search(r'\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b', clean_text)
+    # Email (plusieurs formats possibles)
+    email_match = re.search(r'\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b', cleaned_text)
     if email_match:
         result["email"] = email_match.group(0)
 
-    # Téléphone : on garde uniquement chiffres + + (ex: +33612345678)
-    phone_match = re.search(r'((?:\+33|0)[1-9](?:[ \-\.]?\d{2}){4})', clean_text)
+    # Téléphone : formats +33, 0x, avec espaces, tirets, points, normalisé
+    phone_match = re.search(r'((?:\+33|0)[1-9](?:[ \-\.]?\d{2}){4})', cleaned_text)
     if phone_match:
-        result["telephone"] = re.sub(r'[^\d+]', '', phone_match.group(0))
+        tel = phone_match.group(0)
+        tel = re.sub(r'[^\d+]', '', tel)
+        result["telephone"] = tel
 
-    # Adresse : ligne avec code postal + mot clé rue/avenue etc.
+    # Adresse : détecte ligne avec code postal + mots clés rue/avenue/boulevard/impasse/allée
     for line in raw_lines:
-        if re.search(r'\b\d{5}\b', line) and any(
-            kw in line.lower() for kw in ['rue', 'avenue', 'av.', 'bd', 'boulevard', 'impasse', 'allée']
-        ):
+        if re.search(r'\b\d{5}\b', line) and any(kw in line.lower() for kw in ['rue', 'avenue', 'av.', 'bd', 'boulevard', 'impasse', 'allée']):
             result["adresse"] = line
             break
 
-    # Date de naissance : on détecte plusieurs formats, pas uniquement AAAAMMJJ
-    date_match = re.search(r'(\d{2}[\/\-\.\s]\d{2}[\/\-\.\s]\d{4})', clean_text)
+    # Date de naissance : plus souple, différents formats (dd/mm/yyyy, dd mm yyyy, dd-mm-yyyy, etc.)
+    date_match = re.search(r'(\d{1,2}[\/\-\.\s]\d{1,2}[\/\-\.\s]\d{2,4})', cleaned_text)
     if date_match:
-        date_str = date_match.group(1).replace('.', '/').replace('-', '/').replace(' ', '/')
-        result["date_naissance"] = date_str
+        result["date_naissance"] = parse_date(date_match.group(1))
 
-    # Nom / prénom : spaCy sur les 5 premières lignes (souvent au début du CV)
+    # Nom/prénom : spaCy sur premières lignes (extraction entités PERSON)
     doc = nlp(" ".join(raw_lines[:5]))
     for ent in doc.ents:
-        if ent.label_ == "PER":
+        if ent.label_ == "PER" or ent.label_ == "PERSON":
             names = ent.text.strip().split()
             if len(names) >= 2:
                 result["prenom"] = " ".join(names[:-1])
                 result["nom"] = names[-1].upper()
                 break
 
-    # Fallback regex : tentative d'extraire nom et prénom sur première ligne, amélioration possible selon format CV
+    # Fallback regex nom/prénom sur la première ligne (souvent format "Prénom NOM")
     if result["prenom"] == "Inconnu" and raw_lines:
         name_match = re.match(r'^([A-ZÉÈÊÎ][a-zéèêëàâçïîôùûü]+)[\s\-]+([A-Z\s\-]+)$', raw_lines[0])
         if name_match:
             result["prenom"] = name_match.group(1)
             result["nom"] = name_match.group(2).strip().upper()
 
-    # Compétences : on élargit la liste connue pour couvrir plus de technos courantes
-    comp_keywords = ["python", "java", "sql", "c++", "c#", "javascript", "html", "css", "php", "mysql", "docker", "kubernetes", "linux", "react", "nodejs", "git"]
-    comp_found = {kw.upper() for kw in comp_keywords if re.search(rf'\b{re.escape(kw)}\b', lower_text)}
+    # Compétences : élargissement + fuzzy simple (ignore accents et casse)
+    comp_keywords = ["python", "java", "sql", "c++", "c#", "javascript", "html", "css", "php", "mysql",
+                     "docker", "kubernetes", "linux", "react", "nodejs", "git", "aws", "azure", "tensorflow"]
+    comp_found = set()
+    for kw in comp_keywords:
+        pattern = rf'\b{re.escape(kw)}\b'
+        if re.search(pattern, lower_text):
+            comp_found.add(kw.upper())
     result["competences"] = sorted(list(comp_found))
 
-    # Langues : parse proprement le bloc LANGUES, tolérance aux formats variés
+    # Langues : détection souple avec niveaux variés, prise en compte 'courant', 'bilingue', 'notions'
     def parse_langues_block(text_block: str) -> List[Dict[str, str]]:
         langues_list = []
         langues_possibles = ["anglais", "espagnol", "allemand", "italien", "chinois", "arabe", "russe"]
-        niveau_possibles = ["A1", "A2", "B1", "B2", "C1", "C2"]
+        niveau_possibles = ["A1", "A2", "B1", "B2", "C1", "C2", "courant", "bilingue", "notions", "débutant", "intermédiaire"]
         parts = re.split(r'[,\n]', text_block)
         for part in parts:
             part = part.strip()
@@ -81,7 +108,7 @@ def extract_info_cv(text: str) -> Dict[str, Union[str, List[Union[str, Dict[str,
             for langue in langues_possibles:
                 if langue in part.lower():
                     niveau_match = re.search(r'\b(' + "|".join(niveau_possibles) + r')\b', part, re.IGNORECASE)
-                    niveau = niveau_match.group(0).upper() if niveau_match else "Inconnu"
+                    niveau = niveau_match.group(0).capitalize() if niveau_match else "Inconnu"
                     langues_list.append({"langue": langue.capitalize(), "niveau": niveau})
                     break
         return langues_list
@@ -93,14 +120,14 @@ def extract_info_cv(text: str) -> Dict[str, Union[str, List[Union[str, Dict[str,
             in_langues_section = True
             continue
         if in_langues_section:
-            if not line.strip() or re.match(r'^[A-Z\s]+$', line.strip()):  # Arrêt à fin de section
+            if not line.strip() or re.match(r'^[A-Z\s]+$', line.strip()):  # fin de section
                 break
             langues_block += line + "\n"
 
     if langues_block:
         result["langues"] = parse_langues_block(langues_block)
 
-    # Formations : extraction après section FORMATIONS jusqu'à autre section vide ou majuscule
+    # Formations : extraction lignes après section FORMATIONS jusqu'à section vide ou majuscules
     formations = []
     in_formations_section = False
     for line in raw_lines:
@@ -113,7 +140,7 @@ def extract_info_cv(text: str) -> Dict[str, Union[str, List[Union[str, Dict[str,
             formations.append(line.strip())
     result["formations"] = [{"formation": f} for f in formations if f]
 
-    # Expériences : idem que formations
+    # Expériences : même principe que formations, avec extraction date(s) possibles (non structurée ici)
     experiences = []
     in_experiences_section = False
     for line in raw_lines:

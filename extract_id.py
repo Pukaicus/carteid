@@ -1,7 +1,7 @@
 import re
 from typing import Dict
 
-from nlp_model import nlp
+from nlp_model import get_nlp, clean_text
 
 def detect_carte_identite(text: str) -> bool:
     """
@@ -38,8 +38,13 @@ def extract_info_id(text: str) -> Dict[str, str]:
     Retourne un dictionnaire avec les champs standardisés.
     """
     try:
-        lines = [line.strip() for line in text.split('\n') if line.strip()]
+        # Nettoyage du texte
+        text_clean = clean_text(text)
+        lines = [line.strip() for line in text_clean.split('\n') if line.strip()]
         full_text = " ".join(lines)
+
+        # Chargement du pipeline NLP
+        nlp = get_nlp()
         doc = nlp(full_text)
 
         result = {
@@ -53,28 +58,31 @@ def extract_info_id(text: str) -> Dict[str, str]:
             "date_expiration": "Inconnu"
         }
 
-        # Numéro de carte (2 lettres + 6 chiffres, option espace)
+        # Extraction numéro de carte (2 lettres + 6 chiffres, espace optionnel)
         id_match = re.search(r'\b[A-Z]{2}\s?\d{6}\b', full_text)
         if id_match:
             result["numero_carte"] = id_match.group(0).replace(" ", "")
 
-        # Date de naissance
+        # Extraction date de naissance (ex : né(e) le 12/05/1980)
         date_naissance_match = re.search(
             r'(?:(?:né[e]? le|naissance)[:\-]?\s*)(\d{2}[\./\-\s]?\d{2}[\./\-\s]?\d{4})',
             full_text, re.IGNORECASE
         )
         if date_naissance_match:
-            result["date_naissance"] = date_naissance_match.group(1).replace(" ", "-")
+            # Format standardisé, remplace espaces et points par -
+            date = re.sub(r'[\./\s]', '-', date_naissance_match.group(1))
+            result["date_naissance"] = date
 
-        # Date d'expiration
+        # Extraction date expiration (ex: valide jusqu'au 12/05/2025)
         expiration_match = re.search(
             r'(date d\'expiration|valide jusqu\'au|expire le)[:\-]?\s*(\d{2}[\./\-\s]?\d{2}[\./\-\s]?\d{4})',
             full_text, re.IGNORECASE
         )
         if expiration_match:
-            result["date_expiration"] = expiration_match.group(2).replace(" ", "-")
+            date = re.sub(r'[\./\s]', '-', expiration_match.group(2))
+            result["date_expiration"] = date
 
-        # Lieu de naissance
+        # Extraction lieu de naissance
         naissance_lieu_match = re.search(
             r'(lieu de naissance|né[e]? à)[:\-]?\s*([A-Za-zÀ-ÖØ-öø-ÿ\s\-]{2,50})',
             full_text, re.IGNORECASE
@@ -83,17 +91,17 @@ def extract_info_id(text: str) -> Dict[str, str]:
             lieu = naissance_lieu_match.group(2).strip()
             result["lieu_naissance"] = lieu
 
-        # Sexe
+        # Extraction sexe via la fonction dédiée
         result["sexe"] = extract_sexe(lines)
 
-        # Adresse (ligne avec code postal + mot-clé d’adresse)
+        # Extraction adresse (ligne contenant un code postal et mot clé adresse)
         adresse_keywords = ["rue", "av.", "avenue", "boul.", "boulevard", "impasse", "allée", "route", "chemin", "place"]
         for line in lines:
             if re.search(r'\b\d{5}\b', line) and any(kw in line.lower() for kw in adresse_keywords):
-                result["adresse"] = line
+                result["adresse"] = line.strip()
                 break
 
-        # Nom / Prénom avec spaCy (entité "PER")
+        # Extraction Nom / Prénom via spaCy entités PERSONNES ("PER")
         for ent in doc.ents:
             if ent.label_ == "PER":
                 parts = ent.text.strip().split()
@@ -102,10 +110,10 @@ def extract_info_id(text: str) -> Dict[str, str]:
                     result["nom"] = parts[-1].upper()
                     break
 
-        # Fallback avec regex si spaCy n’a rien trouvé
+        # Fallback regex nom/prénom si spaCy n'a rien détecté
         if result["nom"] == "Inconnu" or result["prenom"] == "Inconnu":
-            nom_match = re.search(r'NOM\s*[:\-]\s*([A-ZÉÈÊËÀÂÇÏÎÔÙÛÜ\- ]+)', full_text, re.IGNORECASE)
-            prenom_match = re.search(r'PRÉ?NOM\s*[:\-]\s*([A-ZÉÈÊËÀÂÇÏÎÔÙÛÜ][a-zéèêëàâçïîôùûü\- ]+)', full_text, re.IGNORECASE)
+            nom_match = re.search(r'NOM\s*[:\-]?\s*([A-ZÉÈÊËÀÂÇÏÎÔÙÛÜ\- ]+)', full_text, re.IGNORECASE)
+            prenom_match = re.search(r'PRÉ?NOM\s*[:\-]?\s*([A-ZÉÈÊËÀÂÇÏÎÔÙÛÜ][a-zéèêëàâçïîôùûü\- ]+)', full_text, re.IGNORECASE)
             if nom_match:
                 result["nom"] = nom_match.group(1).strip().upper()
             if prenom_match:
