@@ -4,8 +4,8 @@ from ocr_utils import ocr_file
 from detect_type import detect_document_type
 from extract_cv import extract_info_cv
 from extract_id import extract_info_id
-from xml_utils import save_to_xml  # harmonisé avec le reste
-from config import INPUT_DIR_ID, INPUT_DIR_CV, OUTPUT_DIR  # évite les chemins codés en dur
+from xml_utils import save_to_xml 
+from config import INPUT_DIR_ID, INPUT_DIR_CV, OUTPUT_DIR  
 
 # 📂 Chemins vers les dossiers à surveiller
 input_folders = [INPUT_DIR_ID, INPUT_DIR_CV]

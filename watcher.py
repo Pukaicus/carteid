@@ -39,23 +39,19 @@ class NewFileHandler(FileSystemEventHandler):
         # Nettoyage simple du texte
         text = text.replace('\n', ' ').replace('\r', ' ').strip()
 
-        # ✅ Détection du type de document
-        if detect_document_type(text):
-            doc_type = 'carte_identite'
-        elif 'cv' in filepath.lower() or 'curriculum' in text.lower():
-            doc_type = 'cv'
-        else:
-            doc_type = None
-
+        # ✅ Détection homogène du type de document
+        doc_type = detect_document_type(text)
         print(f"Type détecté : {doc_type}")
 
+        if doc_type not in ['cv', 'carte_identite']:
+            print(f"[IGNORÉ] Type de document non reconnu pour : {filepath}")
+            return
+
+        # Extraction des infos selon le type détecté
         if doc_type == 'cv':
             info = extract_info_cv(text)
         elif doc_type == 'carte_identite':
             info = extract_info_id(text)
-        else:
-            print("Document non reconnu, traitement annulé.")
-            return
 
         # Préparation nom fichier XML
         base_name = os.path.splitext(os.path.basename(filepath))[0]

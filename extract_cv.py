@@ -1,8 +1,7 @@
 import re
-import spacy
 from typing import Dict, List, Union
 
-nlp = spacy.load("fr_core_news_md")
+from nlp_model import nlp
 
 def extract_info_cv(text: str) -> Dict[str, Union[str, List[Union[str, Dict[str, str]]]]]:
     # On conserve les retours à la ligne, mais on nettoie les espaces inutiles dans chaque ligne

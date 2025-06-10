@@ -2,9 +2,9 @@ import os
 from extract_cv import extract_info_cv
 from extract_id import extract_info_id
 from xml_utils import create_xml
-from detect_type import detect_document_type  # ✔️ Corrigé ici
-from ocr_utils import ocr_file  # Assure-toi d’avoir ce fichier
-from config import INPUT_FOLDER, OUTPUT_FOLDER  # Assure-toi que ces variables sont bien définies
+from detect_type import detect_document_type 
+from ocr_utils import ocr_file 
+from config import INPUT_FOLDER, OUTPUT_FOLDER  
 
 valid_extensions = ('.jpg', '.jpeg', '.png', '.pdf')
 

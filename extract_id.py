@@ -1,9 +1,7 @@
 import re
-import spacy
 from typing import Dict
 
-# Chargement du modèle spaCy français
-nlp = spacy.load("fr_core_news_md")
+from nlp_model import nlp
 
 def detect_carte_identite(text: str) -> bool:
     """
