@@ -1,21 +1,14 @@
 <?xml version="1.0" ?>
 <CV>
-  <date_creation>2025-06-10 10:18:07</date_creation>
+  <date_creation>2025-06-10 15:25:02</date_creation>
   <Identite>
     <Nom>B</Nom>
     <Prenom>DÉTOUXM Permis</Prenom>
-    <Email>Inconnu</Email>
-    <Telephone>Inconnu</Telephone>
+    <Email>a.martinot@mail.com</Email>
+    <Telephone>0666666666</Telephone>
     <Adresse>Inconnu</Adresse>
     <DateNaissance>Inconnu</DateNaissance>
   </Identite>
-  <CarteIdentite>
-    <NumeroCarte>Inconnu</NumeroCarte>
-    <Sexe>Masculin</Sexe>
-    <Nationalite>Inconnu</Nationalite>
-    <LieuNaissance>Inconnu</LieuNaissance>
-    <DateExpiration>Inconnu</DateExpiration>
-  </CarteIdentite>
   <Competences/>
   <Langues/>
   <Experiences/>

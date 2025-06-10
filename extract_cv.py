@@ -13,7 +13,7 @@ def clean_text(text: str) -> str:
     """
     text = text.replace('\r', '\n')
     text = re.sub(r'[ \t]+', ' ', text)
-    text = re.sub(r'[^\w\s@.+\-/]', '', text)  # conserve lettres, chiffres, @ . + - /
+    text = re.sub(r'[^\w\s@.+\-/]', '', text) 
     text = re.sub(r'\n+', '\n', text)
     return text.strip()
 
@@ -63,10 +63,15 @@ def extract_info_cv(text: str) -> Dict[str, Union[str, List[Union[str, Dict[str,
             result["adresse"] = line
             break
 
-    # Date de naissance : plus souple, différents formats (dd/mm/yyyy, dd mm yyyy, dd-mm-yyyy, etc.)
-    date_match = re.search(r'(\d{1,2}[\/\-\.\s]\d{1,2}[\/\-\.\s]\d{2,4})', cleaned_text)
-    if date_match:
-        result["date_naissance"] = parse_date(date_match.group(1))
+    # Date de naissance : extraction améliorée
+    dates_found = re.findall(r'\b\d{1,2}[\/\-\.\s]\d{1,2}[\/\-\.\s]\d{2,4}\b', cleaned_text)
+    date_naissance = "Inconnu"
+    for d in dates_found:
+        parsed_date = dateparser.parse(d, languages=['fr'])
+        if parsed_date and 1900 <= parsed_date.year <= 2010:
+            date_naissance = parsed_date.strftime('%Y-%m-%d')
+            break
+    result["date_naissance"] = date_naissance
 
     # Nom/prénom : spaCy sur premières lignes (extraction entités PERSON)
     doc = nlp(" ".join(raw_lines[:5]))
