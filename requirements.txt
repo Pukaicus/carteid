@@ -1,4 +1,7 @@
 pytesseract
 Pillow
 pdf2image
-python-dotenv
+opencv-python
+spacy
+watchdog
+lxml

@@ -4,7 +4,7 @@ from watchdog.events import FileSystemEventHandler
 import os
 
 from ocr_utils import ocr_file
-from delect_type import is_carte_identite
+from detect_type import detect_document_type
 from extract_cv import extract_info_cv
 from extract_id import extract_info_id
 from xml_utils import create_xml
@@ -40,7 +40,7 @@ class NewFileHandler(FileSystemEventHandler):
         text = text.replace('\n', ' ').replace('\r', ' ').strip()
 
         # ✅ Détection du type de document
-        if is_carte_identite(text):
+        if detect_document_type(text):
             doc_type = 'carte_identite'
         elif 'cv' in filepath.lower() or 'curriculum' in text.lower():
             doc_type = 'cv'

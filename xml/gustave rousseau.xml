@@ -1,2 +1,23 @@
-<?xml version='1.0' encoding='utf-8'?>
-<CV><date_creation>2025-06-06 15:38:40</date_creation><Identite><Nom>CA/07RVOG4</Nom><Prenom>Es</Prenom><Email>Inconnu</Email><Telephone>Inconnu</Telephone><Adresse>Inconnu</Adresse><DateNaissance>Inconnu</DateNaissance></Identite><Competences /><Langues><Langue niveau="Inconnu">Anglais</Langue></Langues><Experiences /><Formations /></CV>
+<?xml version="1.0" ?>
+<CV>
+  <date_creation>2025-06-10 10:18:11</date_creation>
+  <Identite>
+    <Nom>CA/07RVOG4</Nom>
+    <Prenom>Es</Prenom>
+    <Email>Inconnu</Email>
+    <Telephone>Inconnu</Telephone>
+    <Adresse>Inconnu</Adresse>
+    <DateNaissance>Inconnu</DateNaissance>
+  </Identite>
+  <CarteIdentite>
+    <NumeroCarte>Inconnu</NumeroCarte>
+    <Sexe>Masculin</Sexe>
+    <Nationalite>Inconnu</Nationalite>
+    <LieuNaissance>Inconnu</LieuNaissance>
+    <DateExpiration>Inconnu</DateExpiration>
+  </CarteIdentite>
+  <Competences/>
+  <Langues/>
+  <Experiences/>
+  <Formations/>
+</CV>

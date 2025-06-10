@@ -1,2 +1,23 @@
-<?xml version='1.0' encoding='utf-8'?>
-<CV><date_creation>2025-06-06 15:38:46</date_creation><Identite><Nom>ZE</Nom><Prenom>Lukas Mens</Prenom><Email>Inconnu</Email><Telephone>0673573255</Telephone><Adresse>Inconnu</Adresse><DateNaissance>Inconnu</DateNaissance></Identite><Competences><Competence>HTML</Competence><Competence>JAVA</Competence><Competence>PYTHON</Competence></Competences><Langues><Langue niveau="A2">Anglais</Langue></Langues><Experiences /><Formations /></CV>
+<?xml version="1.0" ?>
+<CV>
+  <date_creation>2025-06-10 10:18:14</date_creation>
+  <Identite>
+    <Nom>MENS</Nom>
+    <Prenom>Lukas</Prenom>
+    <Email>Inconnu</Email>
+    <Telephone>Inconnu</Telephone>
+    <Adresse>Inconnu</Adresse>
+    <DateNaissance>Inconnu</DateNaissance>
+  </Identite>
+  <CarteIdentite>
+    <NumeroCarte>Inconnu</NumeroCarte>
+    <Sexe>Masculin</Sexe>
+    <Nationalite>Inconnu</Nationalite>
+    <LieuNaissance>Inconnu</LieuNaissance>
+    <DateExpiration>Inconnu</DateExpiration>
+  </CarteIdentite>
+  <Competences/>
+  <Langues/>
+  <Experiences/>
+  <Formations/>
+</CV>

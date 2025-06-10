@@ -2,7 +2,7 @@ import os
 from extract_cv import extract_info_cv
 from extract_id import extract_info_id
 from xml_utils import create_xml
-from delect_type import delect_document_type  # ✔️ Corrigé ici
+from detect_type import detect_document_type  # ✔️ Corrigé ici
 from ocr_utils import ocr_file  # Assure-toi d’avoir ce fichier
 from config import INPUT_FOLDER, OUTPUT_FOLDER  # Assure-toi que ces variables sont bien définies
 
@@ -15,7 +15,7 @@ for root_dir, dirs, files in os.walk(INPUT_FOLDER):
             print(f"📄 Traitement du fichier : {filepath}")
             text = ocr_file(filepath)
 
-            doc_type = delect_document_type(text)
+            doc_type = detect_document_type(text)
 
             if doc_type == "id_card":
                 info = extract_info_id(text)

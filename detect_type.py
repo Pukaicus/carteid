@@ -8,7 +8,7 @@ def is_cv(text):
     keywords = ['curriculum vitae', 'expérience', 'formation', 'diplôme', 'stage', 'compétences', 'poste', 'profil']
     return sum(1 for kw in keywords if kw in text_lower) >= 3
 
-def delect_document_type(text):
+def detect_document_type(text):
     if is_carte_identite(text):
         return "id_card"
     elif is_cv(text):
