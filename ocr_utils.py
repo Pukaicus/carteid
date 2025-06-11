@@ -15,3 +15,12 @@ def ocr_file(filepath):
     else:
         img = Image.open(filepath)
         return pytesseract.image_to_string(img, lang='fra')
+def clean_text(text):
+    """
+    Nettoie le texte OCR en supprimant les retours à la ligne et espaces superflus.
+    """
+    if not text:
+        return ""
+    text = text.replace('\n', ' ').replace('\r', ' ')
+    text = ' '.join(text.split()) 
+    return text

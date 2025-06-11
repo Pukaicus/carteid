@@ -13,11 +13,17 @@ for root_dir, dirs, files in os.walk(INPUT_FOLDER):
         if filename.lower().endswith(valid_extensions):
             filepath = os.path.join(root_dir, filename)
             print(f"📄 Traitement du fichier : {filepath}")
+
+            # OCR
             text = ocr_file(filepath)
 
+            # Nettoyage basique du texte
+            text = text.replace('\n', ' ').replace('\r', ' ').strip()
+
+            # Détection du type
             doc_type = detect_document_type(text)
 
-            if doc_type == "id_card":
+            if doc_type == "carte_identite":
                 info = extract_info_id(text)
                 out_xml = os.path.join(OUTPUT_FOLDER, os.path.splitext(filename)[0] + '_carte.xml')
                 create_xml(info, out_xml)

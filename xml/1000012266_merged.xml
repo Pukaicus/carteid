@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <CV>
-  <date_creation>2025-06-10 15:24:47</date_creation>
+  <date_creation>2025-06-11 10:57:56</date_creation>
   <Identite>
     <Nom>LUKAS</Nom>
     <Prenom>Given names</Prenom>
@@ -9,13 +9,6 @@
     <Adresse>Inconnu</Adresse>
     <DateNaissance>Inconnu</DateNaissance>
   </Identite>
-  <CarteIdentite>
-    <NumeroCarte>Inconnu</NumeroCarte>
-    <Sexe>Masculin</Sexe>
-    <Nationalite>Inconnu</Nationalite>
-    <LieuNaissance>Inconnu</LieuNaissance>
-    <DateExpiration>Inconnu</DateExpiration>
-  </CarteIdentite>
   <Competences/>
   <Langues/>
   <Experiences/>
